@@ -1,0 +1,187 @@
+<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Mini Farm Island 3D</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--g:#2ecc71;--y:#f1c40f}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:#6ec6f5;-webkit-user-select:none;user-select:none}
+canvas{display:block;position:fixed;inset:0}
+.glass{position:fixed;background:rgba(255,255,255,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.8);border-radius:20px;padding:14px;box-shadow:0 8px 28px rgba(0,60,120,.18);color:#2c3e50;transition:.3s}
+#hud{left:14px;top:calc(14px + env(safe-area-inset-top,0px));width:220px}
+#shop{right:14px;top:calc(14px + env(safe-area-inset-top,0px));width:250px}
+.hid #hud{transform:translateX(-120%)}.hid #shop{transform:translateX(120%)}
+h1{font-size:17px;margin:0 0 8px}.st{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.6);border-radius:14px;padding:8px 10px;margin-bottom:8px}.st small{display:block;font-size:11px;color:#667}.st b{font-size:17px}.st i{font-style:normal;font-size:26px}
+button{font-family:inherit;cursor:pointer}
+#sell{width:100%;border:0;border-bottom:4px solid #b8920a;background:var(--y);color:#7a5c00;font-weight:700;padding:9px;border-radius:12px;font-size:14px}#sell:disabled{background:#ddd;border-color:#bbb;color:#999;cursor:default}
+#sh{font-size:11px;text-align:center;color:#778;margin-top:5px}
+.tabs{display:flex;border-bottom:2px solid #e2e8ee;margin-bottom:8px}.tabs button{flex:1;border:0;background:none;padding:8px;font-size:13px;color:#778;border-bottom:3px solid transparent;margin-bottom:-2px}.tabs .on{color:var(--g);border-color:var(--g);font-weight:700}
+.it{border:2px solid #e3e9ef;border-radius:12px;padding:8px 10px;margin-bottom:7px;background:rgba(255,255,255,.75);cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:8px}.it.on{border-color:var(--g);background:#eafaf1}.it.off{opacity:.5}.it .r{text-align:right;color:#27ae60}.it .c{color:#e74c3c;font-size:12px}
+#tg{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));border:0;background:rgba(255,255,255,.7);backdrop-filter:blur(10px);border-radius:20px;padding:6px 16px;font-size:13px;color:#2c3e50;z-index:5}
+#hint{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:rgba(44,62,80,.85);color:#fff;border-radius:30px;padding:10px 22px;font-size:13px;white-space:nowrap;max-width:94vw;overflow:hidden;text-overflow:ellipsis}#hint b{color:var(--y);font-weight:500}
+#lab{position:fixed;transform:translate(-50%,-100%);background:#2c2c2c;color:var(--y);border:2px solid var(--y);border-radius:12px;padding:2px 10px;font-weight:700;font-size:13px;pointer-events:none;white-space:nowrap}
+.ft{position:fixed;font-weight:700;font-size:22px;pointer-events:none;transform:translateX(-50%);text-shadow:0 2px 4px rgba(0,0,0,.35),0 0 3px #fff;animation:fl 1.3s ease-out forwards;z-index:20}
+@keyframes fl{to{transform:translate(-50%,-70px);opacity:0}}
+#qm{position:fixed;inset:0;background:rgba(10,30,50,.45);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:10;padding:10px}
+.box{background:#fff;border:4px solid #3498db;border-radius:22px;padding:18px;width:min(440px,100%);text-align:center;color:#2c3e50}
+.box h2{margin:0 0 4px;color:#2980b9;font-size:20px}.box p{margin:6px 0;font-size:13px;color:#667}
+#slots,#tiles{display:flex;gap:8px;justify-content:center;margin:10px 0;min-height:56px}
+.slot,.tile{width:52px;height:52px;border-radius:12px;font-size:28px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.slot{border:3px dashed #9bb;background:#f0f4f7;cursor:pointer}.slot.f{border:3px solid #3498db;background:#eaf4fd;color:#2980b9}
+.tile{background:#3498db;color:#fff;border-bottom:4px solid #21618c;touch-action:none;cursor:grab}.tile.u{visibility:hidden}
+.gh{position:fixed;pointer-events:none;z-index:50;transform:translate(-50%,-50%) scale(1.15);opacity:.9}
+#opts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.op{border:2px solid #cfd8dc;background:#fff;border-radius:12px;padding:8px 16px;font-size:16px}.op.on{background:#fdf2c4;border-color:var(--y);font-weight:700}
+.go{border:0;border-radius:10px;padding:9px 20px;font-size:15px;margin:10px 4px 0;color:#fff;font-weight:700}
+@media(max-width:700px){#hud{width:160px;padding:10px}#shop{width:180px;padding:10px}.st b{font-size:14px}.it{font-size:11px}}
+</style></head><body>
+<div id="hud" class="glass"><h1>🌿 Mini Farm Island</h1>
+<div class="st"><i>🪙</i><div><small>เงินออม</small><b id="coin">100 เหรียญ</b></div></div>
+<div class="st"><i>📦</i><div><small>ผลผลิตในคลัง</small><b id="inv">0 ชิ้น</b></div></div>
+<button id="sell" disabled>ขายผลผลิตทั้งหมด</button><div id="sh">ปลูกพืชเพื่อเก็บเกี่ยว</div></div>
+<div id="shop" class="glass"><div class="tabs"><button id="t0" class="on">🛒 เมล็ดพันธุ์</button><button id="t1">🔨 ก่อสร้าง</button></div><div id="list"></div></div>
+<button id="tg">👁 ซ่อน/แสดงเมนู</button>
+<div id="lab">QUIZ 🤖</div>
+<div id="hint">เลือกเมล็ด → คลิกแปลงดิน <b>ปลูก</b> → รอต้นโตเต็มที่ → คลิก <b>เก็บเกี่ยว</b></div>
+<div id="qm"><div class="box"><h2>🤖 หุ่นยนต์ช่วยรดน้ำ</h2><p>เติมตัวอักษรให้เป็นคำศัพท์สัตว์ แล้วเลือกความหมาย ตอบถูกรับบัฟโตไว 1.5x เป็นเวลา 10 วินาที!</p>
+<div id="slots"></div><div id="tiles"></div><p>ความหมายของคำนี้คือ…</p><div id="opts"></div>
+<button class="go" id="qok" style="background:#27ae60">ตรวจคำตอบ</button><button class="go" id="qx" style="background:#e74c3c">ปิดหน้าต่าง</button></div></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+<script>
+const T=THREE,$=s=>document.querySelector(s),R=(a,b)=>a+Math.random()*(b-a);
+const shuf=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+// ---------- scene ----------
+const scene=new T.Scene();scene.background=new T.Color(0x6ec6f5);
+const cam=new T.PerspectiveCamera(50,innerWidth/innerHeight,.1,300);cam.position.set(0,10,15);
+const ren=new T.WebGLRenderer({antialias:true});ren.setSize(innerWidth,innerHeight);ren.setPixelRatio(Math.min(devicePixelRatio,2));ren.shadowMap.enabled=true;document.body.prepend(ren.domElement);
+const ctl=new T.OrbitControls(cam,ren.domElement);ctl.target.set(0,0,1.5);ctl.enableDamping=true;ctl.maxPolarAngle=Math.PI/2.15;ctl.minDistance=6;ctl.maxDistance=32;ctl.enablePan=false;
+scene.add(new T.HemisphereLight(0xffffff,0x88aa66,.85));
+const sun=new T.DirectionalLight(0xffffff,.8);sun.position.set(8,15,6);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-14,right:14,top:14,bottom:-14,far:50});scene.add(sun);
+const M=(c,o={})=>new T.MeshStandardMaterial({color:c,flatShading:true,...o});
+const mesh=(g,m,x=0,y=0,z=0)=>{const o=new T.Mesh(g,m);o.position.set(x,y,z);o.castShadow=o.receiveShadow=true;return o};
+const B=(w,h,d)=>new T.BoxGeometry(w,h,d);
+// island + sea
+scene.add(mesh(new T.CylinderGeometry(10,7,1.6,22),M(0xffd98a),0,-.9,0));
+scene.add(mesh(new T.CylinderGeometry(9.3,9.8,.8,22),M(0xa5ee6e),0,-.4,0));
+const seaG=new T.PlaneGeometry(160,160,50,50);seaG.rotateX(-Math.PI/2);
+const sea=new T.Mesh(seaG,new T.MeshStandardMaterial({color:0x3bb0ee,flatShading:true,transparent:true,opacity:.88}));sea.position.y=-1.3;scene.add(sea);
+// trees
+const trees=[];[[-6.5,-2.5],[-4,-6.2],[6.8,-3.2],[7,1.8],[-7,3.5],[4,6.8]].forEach(([x,z],i)=>{const g=new T.Group();g.position.set(x,0,z);g.add(mesh(new T.CylinderGeometry(.25,.35,1.4,6),M(0x8b5a2b),0,.7,0));g.add(mesh(new T.ConeGeometry(1.3,3,7),M(0x2e9e5b),0,2.6,0));g.add(mesh(new T.ConeGeometry(.9,2,7),M(0x35b36a),0,4,0));g.scale.setScalar(R(.9,1.15));scene.add(g);trees.push(g)});
+[[-3,4.5],[7.5,5],[5.5,-6]].forEach(([x,z])=>{const r=mesh(new T.DodecahedronGeometry(R(.5,.9),0),M(0x9a9a9a),x,.3,z);r.rotation.y=R(0,6);scene.add(r)});
+// house
+const house=new T.Group();house.position.set(1,0,-5.8);scene.add(house);let hl=1,chim=new T.Vector3();
+function buildHouse(l){house.clear();const w=[3,3.6,4.4][l-1],h=[2,3,3.4][l-1],d=[3,3.2,3.6][l-1],rh=[1.8,2.1,2.4][l-1],rc=l<3?0xff6f00:0x2f8fdd;
+house.add(mesh(B(w,h,d),M(0xf0e0c8),0,h/2,0));
+const r=mesh(new T.ConeGeometry(Math.max(w,d)*.78,rh,4),M(rc),0,h+rh/2,0);r.rotation.y=Math.PI/4;house.add(r);
+house.add(mesh(B(.8,1.3,.1),M(0x8b5a2b),0,.65,d/2+.02));
+for(let f=0;f<(l>1?2:1);f++){[-1,1].forEach(s=>house.add(mesh(B(.6,.6,.1),M(0x9fd4f0),s*w*.3,1.3+f*1.3,d/2+.02)))}
+if(l==3){house.add(mesh(B(2,1.8,2.6),M(0xf0e0c8),w/2+.9,.9,0));house.add(mesh(B(2.3,.2,2.9),M(0x2f8fdd),w/2+.9,1.9,0))}
+house.add(mesh(B(.5,1.2,.5),M(0x8d6e63),w*.3,h+rh*.45,-d*.15));chim.set(1+w*.3,h+rh*.45+.7,-5.8-d*.15)}
+buildHouse(1);
+const smoke=[];for(let i=0;i<14;i++){const s=new T.Mesh(new T.SphereGeometry(.3,8,6),new T.MeshBasicMaterial({color:0xffffff,transparent:true}));scene.add(s);smoke.push(s)}
+// well
+const well=new T.Group();well.position.set(-5.2,0,.6);scene.add(well);
+well.add(mesh(new T.CylinderGeometry(1,1.1,.9,10),M(0x8e9a9e),0,.45,0));well.add(mesh(new T.CylinderGeometry(.8,.8,.1,10),M(0x3d9be9),0,.85,0));
+[-.85,.85].forEach(s=>well.add(mesh(B(.15,1.8,.15),M(0x8b5a2b),s,1.4,0)));well.add(mesh(new T.ConeGeometry(1.4,.9,4),M(0xe8402f),0,2.5,0)).rotation;well.children[well.children.length-1].rotation.y=Math.PI/4;
+// robot
+const robot=new T.Group();robot.position.set(-3.6,0,1.9);robot.rotation.y=.6;scene.add(robot);
+robot.add(mesh(B(.9,1.1,.7),M(0xc8ccd0),0,1.05,0));robot.add(mesh(B(.75,.6,.65),M(0xd8dce0),0,1.95,0));
+[-.18,.18].forEach(s=>robot.add(mesh(new T.SphereGeometry(.09,6,6),M(0xf5c518),s,2,.34)));
+robot.add(mesh(B(.1,.4,.1),M(0x888),0,2.45,0));robot.add(mesh(new T.SphereGeometry(.1,6,6),M(0x3498db),0,2.7,0));
+[-.25,.25].forEach(s=>robot.add(mesh(B(.3,.4,.45),M(0x2f8fdd),s,.2,0)));
+const rbM=[];robot.traverse(o=>{if(o.isMesh){o.userData.robot=1;rbM.push(o)}});
+// ---------- game data ----------
+const C=[{n:'มะเขือเทศ',e:'🍅',cost:10,sell:25,t:15},{n:'แครอท',e:'🥕',cost:20,sell:60,t:30},{n:'กะหล่ำปลี',e:'🥬',cost:50,sell:200,t:60}];
+const W=[['CAT','แมว','🐱'],['DOG','สุนัข','🐶'],['PIG','หมู','🐷'],['COW','วัว','🐮'],['DUCK','เป็ด','🦆'],['FISH','ปลา','🐟'],['BIRD','นก','🐦'],['FROG','กบ','🐸'],['LION','สิงโต','🦁'],['BEAR','หมี','🐻'],['HEN','ไก่','🐔'],['BEE','ผึ้ง','🐝'],['GOAT','แพะ','🐐'],['DEER','กวาง','🦌'],['ANT','มด','🐜']];
+let coin=100,inv={n:0,v:0},sel=0,tab=0,unl=6,buff=0,broke=0,lx=innerWidth/2,ly=innerHeight/2;
+function model(k){const g=new T.Group();
+if(k==0){g.add(mesh(new T.SphereGeometry(.38,10,8),M(0xff3b4a),0,.4,0));g.add(mesh(new T.ConeGeometry(.17,.15,5),M(0x2e9e4f),0,.8,0))}
+else if(k==1){const c=mesh(new T.ConeGeometry(.22,.85,6),M(0xff8c1a),0,.4,0);c.rotation.x=Math.PI;g.add(c);[0,2.1,4.2].forEach(a=>{const l=mesh(new T.ConeGeometry(.08,.4,4),M(0x2e9e4f),Math.sin(a)*.1,.98,Math.cos(a)*.1);l.rotation.set(Math.cos(a)*.3,0,-Math.sin(a)*.3);g.add(l)})}
+else g.add(mesh(new T.IcosahedronGeometry(.5,0),M(0xa8e6a0),0,.5,0));return g}
+const plots=[];
+for(let i=0;i<12;i++){const c=Math.floor(i/3),r=i%3,x=-1+c*2.1,z=-.5+r*2.1;
+const s=mesh(B(1.9,.15,1.9),M(0x7a4a26),x,.07,z);s.add(mesh(B(2.05,.1,2.05),M(0xb06a30),0,-.03,0));s.userData.plot=i;s.visible=i<6;scene.add(s);
+const bar=new T.Group();const bg=new T.Mesh(new T.PlaneGeometry(1.1,.16),new T.MeshBasicMaterial({color:0x333,depthTest:false}));const fgG=new T.PlaneGeometry(1.1,.16);fgG.translate(.55,0,0);const fg=new T.Mesh(fgG,new T.MeshBasicMaterial({color:0x2ecc71,depthTest:false}));fg.position.set(-.55,0,.01);bg.renderOrder=10;fg.renderOrder=11;bar.add(bg,fg);bar.position.set(x,1.7,z);bar.visible=false;scene.add(bar);
+plots.push({s,x,z,crop:null,p:0,ripe:false,age:0,obj:null,bar,fg})}
+const unlocked=i=>i<unl;
+// ---------- UI ----------
+function setCoin(v){coin=v;$('#coin').textContent=coin+' เหรียญ';renderShop()}
+function setInv(){$('#inv').textContent=inv.n+' ชิ้น';$('#sell').disabled=!inv.n;$('#sell').textContent=inv.n?'ขายผลผลิตทั้งหมด (+'+inv.v+')':'ขายผลผลิตทั้งหมด';$('#sh').textContent=inv.n?'คลิกเพื่อขายทั้งหมด':'ปลูกพืชเพื่อเก็บเกี่ยว'}
+function ft(txt,col='#fff',x=innerWidth/2,y=innerHeight/2.6){const d=document.createElement('div');d.className='ft';d.textContent=txt;d.style.cssText+=`left:${x}px;top:${y}px;color:${col}`;document.body.appendChild(d);setTimeout(()=>d.remove(),1300)}
+const scr=(x,y,z)=>{const v=new T.Vector3(x,y,z).project(cam);return[(v.x+1)/2*innerWidth,(1-v.y)/2*innerHeight,v.z]};
+function pay(n){if(coin<n){ft('เงินไม่พอ! 💸','#ff6b6b',lx,ly-20);snd('err');return false}setCoin(coin-n);ft('-'+n+' 🪙','#ffdd57',lx,ly-20);return true}
+function renderShop(){const L=$('#list');L.innerHTML='';
+if(tab==0)C.forEach((c,i)=>{const d=document.createElement('div');d.className='it'+(sel==i?' on':'')+(coin<c.cost?' off':'');d.innerHTML=`<div><b>${c.n} ${c.e}</b><div class="c">ปลูก: -${c.cost} 🪙</div></div><div class="r">ขาย: +${c.sell} 🪙<div style="color:#889;font-size:12px">${c.t>=60?'1 นาที':c.t+' วิ'}</div></div>`;d.onclick=()=>{sel=i;snd('pop');renderShop()};L.appendChild(d)});
+else{let d=document.createElement('div');d.className='it'+(unl>=12||coin<150?' off':'');d.innerHTML=`<div><b>ขยายแปลงผัก 🧱</b><div class="c">(${unl}/12 ช่อง)</div></div><div class="c">${unl>=12?'เต็ม':'-150 🪙'}</div>`;d.onclick=()=>{if(unl>=12)return;if(pay(150)){plots[unl].s.visible=true;unl++;snd('pop');ft('ปลดล็อคแปลงใหม่! 🌱','#9dffa0');renderShop()}};L.appendChild(d);
+const hc=[0,300,800][hl];d=document.createElement('div');d.className='it'+(hl>=3||coin<hc?' off':'');d.innerHTML=`<div><b>ต่อเติมบ้าน 🏠</b><div class="c">ระดับ ${hl}${hl<3?' → '+(hl+1):' (สูงสุด)'}</div></div><div class="c">${hl>=3?'เต็ม':'-'+hc+' 🪙'}</div>`;d.onclick=()=>{if(hl>=3)return;if(pay(hc)){hl++;buildHouse(hl);snd('win');ft('บ้านใหญ่ขึ้น! 🏡','#9dffa0')}renderShop()};L.appendChild(d)}}
+$('#t0').onclick=()=>{tab=0;$('#t0').className='on';$('#t1').className='';renderShop()};
+$('#t1').onclick=()=>{tab=1;$('#t1').className='on';$('#t0').className='';renderShop()};
+$('#tg').onclick=()=>document.body.classList.toggle('hid');
+$('#sell').onclick=()=>{if(!inv.n)return;const v=inv.v;ft('+'+v+' 🪙','#ffe066');snd('coin');inv={n:0,v:0};setInv();setCoin(coin+v)};
+// ---------- sound ----------
+let sy=null;
+function initSnd(){if(sy||!window.Tone)return;sy={};Tone.start().then(()=>{sy.a=new Tone.Synth({oscillator:{type:'triangle'},volume:-8}).toDestination();sy.p=new Tone.PolySynth(Tone.Synth,{oscillator:{type:'sine'},volume:-10}).toDestination();sy.e=new Tone.Synth({oscillator:{type:'square'},volume:-16}).toDestination();sy.ok=1}).catch(()=>{})}
+function snd(k){if(!sy||!sy.ok)return;try{const n=Tone.now();
+if(k=='pop'){sy.a.triggerAttackRelease('E5','32n',n);sy.a.triggerAttackRelease('A5','32n',n+.07)}
+else if(k=='bell')sy.p.triggerAttackRelease(['C6','E6','G6'],'8n',n);
+else if(k=='coin'){sy.a.triggerAttackRelease('E6','32n',n);sy.a.triggerAttackRelease('B6','16n',n+.08)}
+else if(k=='err'){sy.e.triggerAttackRelease('A3',.3,n);sy.e.frequency.rampTo(110,.3)}
+else if(k=='win')['C5','E5','G5','C6'].forEach((x,i)=>sy.a.triggerAttackRelease(x,'16n',n+i*.1))}catch(e){}}
+// ---------- plant / harvest ----------
+function act(i){const p=plots[i];if(!unlocked(i))return;
+if(p.crop==null){if(!pay(C[sel].cost))return;p.crop=sel;p.p=0;p.ripe=false;p.obj=model(sel);p.obj.position.set(p.x,.12,p.z);p.obj.scale.setScalar(.25);p.obj.traverse(o=>o.userData.plot=i);scene.add(p.obj);p.bar.visible=true;snd('pop')}
+else if(p.ripe){inv.n++;inv.v+=C[p.crop].sell;scene.remove(p.obj);p.obj=null;p.crop=null;p.ripe=false;setInv();snd('bell');ft('+1 '+'📦','#fff',lx,ly-20)}}
+// ---------- quiz ----------
+let q=null,drag=null;
+function openQuiz(){initSnd();if(broke>0){ft('หุ่นยนต์ยังพังอยู่ ⚙️','#ff6b6b');snd('err');return}
+const w=W[Math.floor(Math.random()*W.length)];const o=shuf([w[1],...shuf(W.filter(x=>x!==w)).slice(0,2).map(x=>x[1])]);
+q={w,L:shuf(w[0].split('')),S:Array(w[0].length).fill(null),O:o,m:null};drawQ();$('#qm').style.display='flex'}
+function drawQ(){const S=$('#slots'),Tl=$('#tiles'),O=$('#opts');S.innerHTML=Tl.innerHTML=O.innerHTML='';
+q.S.forEach((j,i)=>{const d=document.createElement('div');d.className='slot'+(j!=null?' f':'');d.dataset.i=i;d.textContent=j!=null?q.L[j]:'';d.onclick=()=>{if(q.S[i]!=null){q.S[i]=null;drawQ()}};S.appendChild(d)});
+q.L.forEach((c,j)=>{const d=document.createElement('div');d.className='tile'+(q.S.includes(j)?' u':'');d.textContent=c;d.dataset.j=j;d.onpointerdown=e=>{e.preventDefault();const g=d.cloneNode(true);g.className='tile gh';g.style.left=e.clientX+'px';g.style.top=e.clientY+'px';document.body.appendChild(g);drag={j,g,x:e.clientX,y:e.clientY,mv:0}};Tl.appendChild(d)});
+q.O.forEach(t=>{const d=document.createElement('button');d.className='op'+(q.m==t?' on':'');d.textContent=t;d.onclick=()=>{q.m=t;drawQ()};O.appendChild(d)})}
+addEventListener('pointermove',e=>{if(!drag)return;drag.g.style.left=e.clientX+'px';drag.g.style.top=e.clientY+'px';if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>6)drag.mv=1});
+addEventListener('pointerup',e=>{if(!drag)return;const{j,g,mv}=drag;drag=null;g.style.display='none';let i=-1;
+if(mv){const el=document.elementFromPoint(e.clientX,e.clientY),s=el&&el.closest('.slot');if(s)i=+s.dataset.i}else i=q.S.indexOf(null);
+g.remove();if(i>=0){q.S[i]=j;snd('pop');drawQ()}});
+$('#qx').onclick=()=>$('#qm').style.display='none';
+$('#qok').onclick=()=>{if(q.S.includes(null)||!q.m){ft('เติมคำและเลือกความหมายให้ครบก่อนนะ','#ffe066');return}
+const ans=q.S.map(j=>q.L[j]).join(''),ok=ans==q.w[0]&&q.m==q.w[1];$('#qm').style.display='none';
+if(ok){buff=10;broke=0;snd('win');ft('ถูกต้อง! '+q.w[2]+' '+q.w[0]+' = '+q.w[1],'#9dffa0');ft('💦 โตไว 1.5x','#7fdcff',innerWidth/2,innerHeight/2.2)}
+else{broke=10;buff=0;snd('err');ft('ผิด! คำตอบคือ '+q.w[0]+' = '+q.w[1],'#ff6b6b');sparkT=0}};
+// ---------- picking ----------
+let dn=null;const rc=new T.Raycaster(),mv2=new T.Vector2();
+ren.domElement.addEventListener('pointerdown',e=>{initSnd();dn=[e.clientX,e.clientY]});
+ren.domElement.addEventListener('pointerup',e=>{if(!dn||Math.hypot(e.clientX-dn[0],e.clientY-dn[1])>6){dn=null;return}dn=null;lx=e.clientX;ly=e.clientY;
+mv2.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);rc.setFromCamera(mv2,cam);
+const list=[...plots.filter((p,i)=>unlocked(i)).map(p=>p.s),...rbM,...plots.filter(p=>p.obj).map(p=>p.obj)];
+const h=rc.intersectObjects(list,true)[0];if(!h)return;const u=h.object.userData;if(u.robot)openQuiz();else if(u.plot!=null)act(u.plot)});
+// ---------- particles ----------
+const parts=[],dropG=new T.SphereGeometry(.07,6,5),spG=new T.BoxGeometry(.1,.1,.1);let sparkT=0;
+function spawn(g,c,p,v,life,kind){const m=new T.Mesh(g,new T.MeshBasicMaterial({color:c,transparent:true}));m.position.copy(p);scene.add(m);parts.push({m,v,life,k:kind})}
+// ---------- loop ----------
+const clock=new T.Clock();let t=0;const sp=seaG.attributes.position;
+function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.1);t+=dt;
+for(let i=0;i<sp.count;i++){const x=sp.getX(i),z=sp.getZ(i);sp.setY(i,Math.sin(x*.25+t*1.2)*.22+Math.cos(z*.3+t)*.2)}sp.needsUpdate=true;seaG.computeVertexNormals();
+trees.forEach((g,i)=>g.rotation.z=Math.sin(t*1.3+i)*.035);
+smoke.forEach((s,i)=>{const k=(t*.35+i/14)%1;s.position.set(chim.x+Math.sin(k*6+i)*.25+k*.6,chim.y+k*4,chim.z);s.scale.setScalar(.5+k*1.6);s.material.opacity=.85*(1-k)});
+const mult=buff>0?1.5:1;
+plots.forEach(p=>{if(p.crop==null)return;
+if(!p.ripe){p.p+=dt*mult/C[p.crop].t;if(p.p>=1){p.p=1;p.ripe=true;p.age=0;p.bar.visible=false;snd('pop')}p.obj.scale.setScalar(.25+.6*p.p);p.fg.scale.x=Math.max(.001,p.p);p.bar.quaternion.copy(cam.quaternion)}
+else{p.age+=dt;p.obj.scale.setScalar(1.3+Math.sin(p.age*14)*.35*Math.exp(-p.age*4));p.obj.rotation.y=Math.sin(t*2+p.x)*.1}});
+// robot states
+let txt='QUIZ 🤖';
+if(buff>0){buff-=dt;txt='รดน้ำ 💦';if(10-buff<2)robot.rotation.y+=dt*9;
+const ps=plots.filter((p,i)=>unlocked(i));for(let n=0;n<2;n++){const p=ps[Math.floor(Math.random()*ps.length)];spawn(dropG,0x4fc3f7,new T.Vector3(p.x+R(-.9,.9),R(3,4.5),p.z+R(-.9,.9)),new T.Vector3(0,-R(4,6),0),1,'d')}
+if(buff<=0)robot.rotation.y=.6}
+if(broke>0){broke-=dt;txt='พัง! ('+Math.ceil(Math.max(broke,0))+')';robot.position.x=-3.6+Math.sin(t*60)*.05;sparkT-=dt;
+if(sparkT<=0){sparkT=.12;for(let n=0;n<4;n++)spawn(spG,Math.random()<.5?0xffa500:0xffe14d,new T.Vector3(robot.position.x,1.6,robot.position.z),new T.Vector3(R(-3,3),R(3,6),R(-3,3)),1.6,'s')}
+if(broke<=0){robot.position.x=-3.6;ft('ซ่อมเสร็จแล้ว! 🔧','#9dffa0')}}
+const l=$('#lab');if(l.textContent!=txt)l.textContent=txt;
+for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.life-=dt;
+if(p.k=='s'){p.v.y-=14*dt;p.m.position.addScaledVector(p.v,dt);if(p.m.position.y<.1){p.m.position.y=.1;p.v.y*=-.35;p.v.x*=.6;p.v.z*=.6}p.m.material.opacity=Math.min(1,p.life)}
+else{p.m.position.addScaledVector(p.v,dt);if(p.m.position.y<.2)p.life=0}
+if(p.life<=0){scene.remove(p.m);p.m.material.dispose();parts.splice(i,1)}}
+const sc=scr(robot.position.x,2.9,robot.position.z);l.style.left=sc[0]+'px';l.style.top=sc[1]+'px';l.style.display=sc[2]<1?'block':'none';
+ctl.update();ren.render(scene,cam)}
+addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});
+setCoin(100);setInv();loop();
+</script></body></html>
